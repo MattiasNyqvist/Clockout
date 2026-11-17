@@ -30,10 +30,10 @@
     color-scheme: light;
 
     /* Mått för hjulen. Samma värden används i alla kort så att allt linjerar. */
-    --wheel-h: 7.8rem;
-    --wheel-w: 3.5rem;
-    --btn: 2.4rem;
-    --now-h: 2.9rem;
+    --wheel-h: 6.8rem;
+    --wheel-w: 3rem;
+    --btn: 2.1rem;
+    --now-h: 2.6rem;
     /* Bredden på två hjul: 2 × (hjul + mellanrum + knapp) + mellanrum mellan hjulen */
     --right-w: calc(2 * (var(--wheel-w) + .4rem + var(--btn)) + .6rem);
 }
@@ -72,13 +72,13 @@ h1:focus { outline: none; }
 /* ===== 3. Layout ===== */
 .app-shell { min-height: 100dvh; display: flex; flex-direction: column; }
 
-/* Extra luft längst ner (7.5rem) så innehållet aldrig hamnar bakom den fasta sidfoten */
+/* Extra luft längst ner (6.5rem) så innehållet aldrig hamnar bakom den fasta sidfoten */
 .app-main {
-    flex: 1; width: 100%; max-width: 520px; margin: 0 auto; padding: 1.25rem 1rem 7.5rem;
-    display: flex; flex-direction: column; gap: 1rem;
+    flex: 1; width: 100%; max-width: 520px; margin: 0 auto; padding: .75rem .75rem 6rem;
+    display: flex; flex-direction: column; gap: .75rem;
 }
 
-/* Fast sidfot: länk + version överst, flikar under */
+/* Fast sidfot: flikar överst, länk + version under */
 .tabbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
     background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -89,8 +89,8 @@ h1:focus { outline: none; }
 
 .app-info {
     display: flex; justify-content: space-between; align-items: center; gap: .75rem;
-    max-width: 520px; margin: 0 auto; padding: .4rem 1rem 0;
-    font-size: .7rem; color: var(--muted);
+    max-width: 520px; margin: 0 auto; padding: 0 1rem .35rem;
+    font-size: .68rem; color: var(--muted);
 }
 .app-info a { color: var(--muted); text-decoration: none; }
 .app-info a:hover { color: var(--accent); text-decoration: underline; }
@@ -98,9 +98,9 @@ h1:focus { outline: none; }
 .tabbar nav { display: flex; max-width: 520px; margin: 0 auto; }
 .tabbar nav a {
     flex: 1; display: flex; flex-direction: column; align-items: center; gap: .2rem;
-    padding: .5rem 0; color: var(--muted); text-decoration: none; font-size: .75rem; font-weight: 500;
+    padding: .45rem 0 .3rem; color: var(--muted); text-decoration: none; font-size: .75rem; font-weight: 500;
 }
-.tabbar nav a svg { width: 22px; height: 22px; }
+.tabbar nav a svg { width: 20px; height: 20px; }
 .tabbar nav a.active { color: var(--accent); }
 
 
@@ -111,7 +111,7 @@ h1:focus { outline: none; }
 
 /* Startsidans huvud: text till vänster, logotyp uppe till höger */
 .head-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
-.app-logo { width: 2.75rem; height: 2.75rem; flex: none; }
+.app-logo { width: 2.5rem; height: 2.5rem; flex: none; }
 
 .badge-week { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: .1rem .6rem; font-weight: 600; font-size: .78rem; }
 
@@ -119,22 +119,21 @@ h1:focus { outline: none; }
 /* ===== 5. Kort och formulär ===== */
 .card-x {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 1rem 1.1rem 1.15rem; margin: 0;
+    box-shadow: var(--shadow); padding: 1.1rem; margin: 0; /* lika stort på alla sidor */
 }
 .card-x .label {
-    display: block; margin-bottom: .6rem;
+    display: block; margin-bottom: .5rem; white-space: nowrap;
     font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
 
-/* Översta kortet på startsidan får extra luft */
-.card-roomy { padding: 1.5rem 1.1rem 1.6rem; }
-.card-roomy .label { margin-bottom: .9rem; }
+/* Vågrät avdelare mellan delarna i ett kort */
+.card-divider { border: 0; border-top: 1px solid var(--line); opacity: 1; margin: .85rem 0; }
 
 /* Två kolumner: kontroller till vänster, hjul till höger.
    Vänsterkolumnen är högst 10.5rem; resten av ytan blir luft mellan kolumnerna. */
 .two-col {
     display: grid; grid-template-columns: minmax(0, 10.5rem) var(--right-w);
-    column-gap: 1rem; justify-content: space-between; align-items: start;
+    column-gap: .75rem; justify-content: space-between; align-items: start;
 }
 .col-left, .col-right { min-width: 0; }
 .ctl { height: var(--wheel-h); } /* Alla kontroller i en rad är lika höga som ett hjul */
@@ -168,7 +167,7 @@ h1:focus { outline: none; }
 .segmented.vertical { flex: 1; flex-direction: column; align-items: stretch; margin: 0; padding: 5px; gap: 5px; box-sizing: border-box; position: relative; }
 .segmented.vertical label {
     flex: 1; width: 100%; box-sizing: border-box; display: grid; place-items: center;
-    padding: 0 .4rem; font-size: .92rem; line-height: 1.15;
+    padding: 0 .3rem; font-size: .88rem; line-height: 1.15;
 }
 
 
@@ -202,7 +201,7 @@ h1:focus { outline: none; }
 
 /* "Sätt till nu": lika bred som hjulen och högerställd under dem */
 .now-btn {
-    width: var(--right-w); max-width: 100%; height: var(--now-h); margin: 1rem 0 0 auto;
+    width: var(--right-w); max-width: 100%; height: var(--now-h); margin: .75rem 0 0 auto;
     display: flex; align-items: center; justify-content: center; gap: .4rem;
     border: 0; border-radius: 12px; padding: 0 .5rem;
     font-size: .8rem; line-height: 1; font-weight: 600; cursor: pointer;
@@ -223,12 +222,12 @@ h1:focus { outline: none; }
 .result {
     background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #06b6d4));
     color: var(--accent-text); border-radius: var(--radius); box-shadow: var(--shadow);
-    margin: .25rem 0 0; padding: 1.4rem 1.25rem; text-align: center;
+    margin: 0; padding: .85rem 1.25rem; /* lika upptill och nedtill */ text-align: center;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.result .small-label { opacity: .85; font-size: .85rem; font-weight: 500; }
-.result .time { font-size: 3.6rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.result .meta { opacity: .85; font-size: .85rem; margin-top: .4rem; }
+.result .small-label { opacity: .85; font-size: .85rem; font-weight: 500; line-height: 1.2; }
+.result .time { font-size: 3.2rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.result .meta { opacity: .85; font-size: .85rem; line-height: 1.2; margin-top: .15rem; }
 .result.error { background: var(--surface); color: var(--danger); border: 1px solid var(--danger); box-shadow: none; }
 
 
