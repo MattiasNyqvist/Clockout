@@ -15,7 +15,7 @@
     <img class="app-logo" src="logo.svg" alt="" width="44" height="44" />
 </header>
 
-<section class="card-x card-roomy">
+<section class="card-x">
     <div class="two-col">
         <div class="col-left">
             <span class="label">Läge</span>
@@ -41,9 +41,9 @@
     <button type="button" class="now-btn" @onclick="Nu" aria-label="@(slutLage ? "Sätt sluttid till nuvarande tid" : "Sätt starttid till nuvarande tid")">
         <span>Sätt till nu</span><strong>@NuText</strong>
     </button>
-</section>
 
-<section class="card-x">
+    <hr class="card-divider" />
+
     <div class="two-col">
         <div class="col-left">
             <label class="label" for="arbetstid">Arbetstid (h)</label>
