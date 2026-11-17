@@ -1,60 +1,204 @@
-﻿@page "/"
+@page "/"
+@using WorkTimeCalculator.Wasm.Services
+@inject AppSettings Config
 
 <PageTitle>Work Time Calculator</PageTitle>
-<h1>Work Time Calculator</h1>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-4">
-
-            <div class="mb-3">
-                <label class="form-label">Arbetstid (timmar)</label>
-                <input type="text" class="form-control" @bind="arbetstid" placeholder="ex. 7.7 eller 7,7" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Starttid</label>
-                <input type="time" class="form-control" @bind="starttid" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Lunch (minuter)</label>
-                <input type="number" class="form-control" @bind="lunch" placeholder="ex. 45" />
-            </div>
-
-            <button class="btn btn-primary" @onclick="Berakna">Beräkna</button>
-            @if (!string.IsNullOrEmpty(resultat))
-            {
-                <div class="alert alert-success mt-3">
-                    <strong>@resultat</strong>
-                </div>
-            }
-
+<header class="page-head head-row">
+    <div>
+        <h1>Work Time Calculator</h1>
+        <div class="sub">
+            <span>@DatumText</span>
+            <span class="badge-week">Vecka @TimeFormat.WeekNumber(idag, Config.WeekStart)</span>
         </div>
     </div>
-</div>
+    <img class="app-logo" src="logo.svg" alt="" width="44" height="44" />
+</header>
+
+<section class="card-x card-roomy">
+    <div class="two-col">
+        <div class="col-left">
+            <span class="label">Läge</span>
+            <div class="ctl time-left">
+                <div class="segmented vertical" role="radiogroup" aria-label="Beräkningsläge">
+                    <input type="radio" id="mode-start" name="mode" checked="@(!slutLage)" @onchange="() => ByLage(false)" />
+                    <label for="mode-start">Jag börjar kl</label>
+                    <input type="radio" id="mode-end" name="mode" checked="@slutLage" @onchange="() => ByLage(true)" />
+                    <label for="mode-end">Jag vill sluta kl</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-right">
+            <span class="label">@(slutLage ? "Sluttid" : "Starttid")</span>
+            <div class="ctl wheels" role="group" aria-label="@(slutLage ? "Sluttid" : "Starttid")">
+                <WheelColumn Label="Tim" Prev="@MinusTimme.ToString("00")" Current="@ValdTid.Hour.ToString("00")" Next="@PlusTimme.ToString("00")"
+                             OnUp="() => StegTimme(-1)" OnDown="() => StegTimme(1)" />
+                <WheelColumn Label="Min" Prev="@MinusMinut.ToString("00")" Current="@ValdTid.Minute.ToString("00")" Next="@PlusMinut.ToString("00")"
+                             OnUp="() => StegMinut(-1)" OnDown="() => StegMinut(1)" />
+            </div>
+        </div>
+    </div>
+    <button type="button" class="now-btn" @onclick="Nu" aria-label="@(slutLage ? "Sätt sluttid till nuvarande tid" : "Sätt starttid till nuvarande tid")">
+        <span>Sätt till nu</span><strong>@NuText</strong>
+    </button>
+</section>
+
+<section class="card-x">
+    <div class="two-col">
+        <div class="col-left">
+            <label class="label" for="arbetstid">Arbetstid (h)</label>
+            <div class="ctl work-left">
+                <input id="arbetstid" type="text" inputmode="decimal" class="input-x @(resultat is null ? "invalid" : "")"
+                       @bind="arbetstid" @bind:event="oninput" placeholder="@Placeholder" />
+                <div class="hint">@(slutLage ? "Arbetstid + lunch dras av från sluttiden" : "Arbetstid + lunch läggs till starttiden")</div>
+            </div>
+        </div>
+        <div class="col-right">
+            <div class="lunch-slot">
+            <span class="label">Lunch</span>
+            <div class="ctl wheels">
+                <WheelColumn Label="Min" Prev="@(lunch >= LunchSteg ? NastaLunch(-1).ToString("00") : "")" Current="@lunch.ToString("00")" Next="@NastaLunch(1).ToString("00")"
+                             OnUp="() => lunch = NastaLunch(-1)" OnDown="() => lunch = NastaLunch(1)" />
+            </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (resultat is { } r)
+{
+    <section class="result" aria-live="polite">
+        <div class="small-label">@(slutLage ? "Du måste börja senast" : "Du kan gå hem")</div>
+        <div class="time">@r.ToString("HH:mm")</div>
+        <div class="meta">@ResultMeta</div>
+    </section>
+}
+else
+{
+    <section class="result error" aria-live="polite">
+        <div class="small-label">Kontrollera arbetstiden</div>
+        <div class="meta">@TimeFormat.Example(Config.TimeSystem)</div>
+    </section>
+}
 
 @code {
-    private string arbetstid = "";
-    private TimeOnly starttid = new TimeOnly(7, 30);
-    private int lunch = 45;
+    // ---- Tillstånd (det användaren har valt) ----
+    private bool slutLage;                        // false = "Jag börjar kl", true = "Jag vill sluta kl"
+    private TimeOnly starttid = new(7, 30);
+    private TimeOnly sluttid = new(16, 0);
+    private string arbetstid = "";                // Texten i arbetstidsfältet (tolkas av TimeFormat)
+    private int lunch = 45;                       // Minuter
+    private readonly DateTime idag = DateTime.Today;
 
-    private string resultat = "";
+    // ---- Konstanter ----
+    private const int MinutSteg = 15;             // Minuthjulet hoppar i kvartar
+    private const int LunchSteg = 5;              // Lunchhjulet hoppar i femminutersteg
+    private const int MaxLunch = 180;
 
-    private void Berakna()
+    // ---- Värden som räknas ut från tillståndet ----
+
+    /// <summary>Tiden som visas i hjulen: sluttid i slutläget, annars starttid.</summary>
+    private TimeOnly ValdTid => slutLage ? sluttid : starttid;
+
+    private string NuText => DateTime.Now.ToString("HH:mm");
+
+    private string Placeholder => TimeFormat.Example(Config.TimeSystem);
+
+    private string DatumText
     {
-        string normaliserad = arbetstid.Replace(",", ".");
-
-        if (!double.TryParse(normaliserad, System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out double timmar))
+        get
         {
-            resultat = "Ogiltig arbetstid – ange ex. 7.7 eller 7,7";
-            return;
+            var sv = System.Globalization.CultureInfo.GetCultureInfo("sv-SE");
+            var text = idag.ToString("dddd d MMMM yyyy", sv);
+            return char.ToUpper(text[0]) + text[1..]; // "tisdag" -> "Tisdag"
         }
+    }
 
-        int totalMinuter = (int)(timmar * 60) + lunch;
-        TimeOnly hemgangstid = starttid.AddMinutes(totalMinuter);
+    /// <summary>
+    /// Resultatet: sluttid (när man kan gå hem) eller starttid (när man måste börja).
+    /// Är null om arbetstiden inte går att tolka.
+    /// </summary>
+    private TimeOnly? resultat
+    {
+        get
+        {
+            if (!TimeFormat.TryParse(arbetstid, Config.TimeSystem, out int arbetsMinuter)) return null;
+            int totaltMinuter = arbetsMinuter + Math.Max(lunch, 0);
+            return slutLage ? sluttid.AddMinutes(-totaltMinuter) : starttid.AddMinutes(totaltMinuter);
+        }
+    }
 
-        resultat = $"Du kan gå hem kl: {hemgangstid:HH:mm}";
+    /// <summary>Förklaringsraden under resultatet, t.ex. "07:30 + 7,7 h arbete + 45 min lunch".</summary>
+    private string ResultMeta
+    {
+        get
+        {
+            TimeFormat.TryParse(arbetstid, Config.TimeSystem, out int arbetsMinuter);
+            var arbete = $"{TimeFormat.Format(arbetsMinuter, Config.TimeSystem)} h arbete + {Math.Max(lunch, 0)} min lunch";
+            return slutLage ? $"{sluttid:HH:mm} − {arbete}" : $"{starttid:HH:mm} + {arbete}";
+        }
+    }
+
+    // Siffrorna som visas ovanför/under det valda värdet i tim- och minuthjulen
+    private int PlusTimme => (ValdTid.Hour + 1) % 24;
+    private int MinusTimme => (ValdTid.Hour + 23) % 24;
+    private int PlusMinut => NastaMinut(ValdTid.Minute, 1);
+    private int MinusMinut => NastaMinut(ValdTid.Minute, -1);
+
+    // ---- Start ----
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Config.LoadAsync();
+        lunch = Config.NormalLunchMinutes;
+        arbetstid = TimeFormat.Format(Config.NormalWorkMinutes, Config.TimeSystem);
+    }
+
+    // ---- Händelser från sidan ----
+
+    private void ByLage(bool slut) => slutLage = slut;
+
+    /// <summary>Flyttar timmen ett steg (-1 = upp, +1 = ned). Efter 23 kommer 00.</summary>
+    private void StegTimme(int riktning) =>
+        SattTid(new TimeOnly((ValdTid.Hour + riktning + 24) % 24, ValdTid.Minute));
+
+    private void StegMinut(int riktning) =>
+        SattTid(new TimeOnly(ValdTid.Hour, NastaMinut(ValdTid.Minute, riktning)));
+
+    /// <summary>"Sätt till nu": använder nuvarande klockslag (utan sekunder).</summary>
+    private void Nu()
+    {
+        var nu = TimeOnly.FromDateTime(DateTime.Now);
+        SattTid(new TimeOnly(nu.Hour, nu.Minute));
+    }
+
+    /// <summary>Sparar tiden i rätt fält beroende på läge.</summary>
+    private void SattTid(TimeOnly tid)
+    {
+        if (slutLage) sluttid = tid; else starttid = tid;
+    }
+
+    // ---- Hjälpmetoder ----
+
+    /// <summary>
+    /// Närmaste kvart i given riktning (+1 uppåt, -1 nedåt). Minuter som redan ligger på en kvart
+    /// flyttas ett helt steg. Vid 60 / -15 börjar minuterna om (45 -> 00, 00 -> 45).
+    /// </summary>
+    private static int NastaMinut(int minut, int riktning)
+    {
+        int steg = riktning > 0
+            ? (minut / MinutSteg + 1) * MinutSteg
+            : (minut % MinutSteg == 0 ? minut - MinutSteg : minut / MinutSteg * MinutSteg);
+        return (steg % 60 + 60) % 60;
+    }
+
+    /// <summary>Närmaste femtal för lunchen i given riktning, begränsat till 0..MaxLunch.</summary>
+    private int NastaLunch(int riktning)
+    {
+        int l = Math.Max(lunch, 0);
+        int steg = riktning > 0
+            ? (l / LunchSteg + 1) * LunchSteg
+            : (l % LunchSteg == 0 ? l - LunchSteg : l / LunchSteg * LunchSteg);
+        return Math.Clamp(steg, 0, MaxLunch);
     }
 }

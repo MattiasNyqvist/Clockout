@@ -1,14 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!--
+    Versionsinformation som visas i sidfoten.
+    - AppVersion:   ändras manuellt vid större ändringar.
+    - BuildCounter: löpnummer som räknas upp av bygget. Pipelinen skickar in det
+                    (-p:BuildCounter=...), lokalt blir det 0.
+    - BuildNumber:  datum (UTC) + löpnummer, t.ex. 20261117.12.
+  -->
+  <PropertyGroup>
+    <AppVersion>1.0</AppVersion>
+    <BuildCounter Condition="'$(BuildCounter)' == ''">0</BuildCounter>
+    <BuildNumber>$([System.DateTime]::UtcNow.ToString('yyyyMMdd')).$(BuildCounter)</BuildNumber>
+  </PropertyGroup>
+
+  <!-- Gör värdena läsbara i koden via BuildInfo.cs -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.14" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.14" PrivateAssets="all" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AppVersion</_Parameter1>
+      <_Parameter2>$(AppVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(BuildNumber)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

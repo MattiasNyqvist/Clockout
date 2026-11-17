@@ -1,0 +1,103 @@
+@page "/settings"
+@using WorkTimeCalculator.Wasm.Services
+@inject AppSettings Config
+
+<PageTitle>Inställningar</PageTitle>
+
+<header class="page-head">
+    <h1>Inställningar</h1>
+    <div class="sub">Sparas i den här webbläsaren</div>
+</header>
+
+<section class="card-x">
+    <div class="setting-group">
+        <span class="label">Tidssystem</span>
+        <div class="segmented" role="radiogroup" aria-label="Tidssystem">
+            <input type="radio" id="sys-dec" name="sys" checked="@(Config.TimeSystem == TimeSystem.Decimal)"
+                   @onchange="() => SetSystem(TimeSystem.Decimal)" />
+            <label for="sys-dec">Decimal</label>
+            <input type="radio" id="sys-clock" name="sys" checked="@(Config.TimeSystem == TimeSystem.Clock)"
+                   @onchange="() => SetSystem(TimeSystem.Clock)" />
+            <label for="sys-clock">Klocka</label>
+        </div>
+        <div class="hint">Halv åtta skrivs som @(Config.TimeSystem == TimeSystem.Decimal ? "7,5" : "7,30").</div>
+    </div>
+
+    <div class="setting-group">
+        <span class="label">Veckostart</span>
+        <div class="segmented" role="radiogroup" aria-label="Veckostart">
+            <input type="radio" id="ws-mon" name="ws" checked="@(Config.WeekStart == WeekStart.Monday)"
+                   @onchange="() => SetWeekStart(WeekStart.Monday)" />
+            <label for="ws-mon">Måndag</label>
+            <input type="radio" id="ws-sun" name="ws" checked="@(Config.WeekStart == WeekStart.Sunday)"
+                   @onchange="() => SetWeekStart(WeekStart.Sunday)" />
+            <label for="ws-sun">Söndag</label>
+        </div>
+    </div>
+</section>
+
+<section class="card-x">
+    <div class="field-grid">
+        <div>
+            <label class="label" for="work">Normal arbetstid (h)</label>
+            <input id="work" type="text" inputmode="decimal" class="input-x @(workInvalid ? "invalid" : "")"
+                   placeholder="@TimeFormat.Example(Config.TimeSystem)" value="@workText" @onchange="SetWork" />
+        </div>
+        <div>
+            <label class="label" for="lunch">Normal lunch (min)</label>
+            <input id="lunch" type="number" inputmode="numeric" min="0" class="input-x"
+                   value="@Config.NormalLunchMinutes" @onchange="SetLunch" />
+        </div>
+    </div>
+    @if (workInvalid)
+    {
+        <div class="hint err">Ogiltig arbetstid – @TimeFormat.Example(Config.TimeSystem)</div>
+    }
+    else
+    {
+        <div class="hint">Fylls i automatiskt på startsidan, men går att ändra där vid varje beräkning.</div>
+    }
+</section>
+
+@code {
+    private string workText = "";
+    private bool workInvalid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Config.LoadAsync();
+        workText = TimeFormat.Format(Config.NormalWorkMinutes, Config.TimeSystem);
+    }
+
+    private async Task SetWork(ChangeEventArgs e)
+    {
+        workText = e.Value?.ToString() ?? "";
+        workInvalid = !TimeFormat.TryParse(workText, Config.TimeSystem, out int minutes) || minutes <= 0;
+        if (workInvalid) return;
+        Config.NormalWorkMinutes = minutes;
+        await Config.SaveAsync();
+    }
+
+    private async Task SetWeekStart(WeekStart start)
+    {
+        Config.WeekStart = start;
+        await Config.SaveAsync();
+    }
+
+    private async Task SetSystem(TimeSystem system)
+    {
+        Config.TimeSystem = system;
+        workText = TimeFormat.Format(Config.NormalWorkMinutes, system);
+        workInvalid = false;
+        await Config.SaveAsync();
+    }
+
+    private async Task SetLunch(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var minutes) && minutes >= 0)
+        {
+            Config.NormalLunchMinutes = minutes;
+            await Config.SaveAsync();
+        }
+    }
+}

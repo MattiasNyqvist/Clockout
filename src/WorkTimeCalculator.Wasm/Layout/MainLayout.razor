@@ -1,7 +1,25 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@using WorkTimeCalculator.Wasm.Services
 
-<div class="container d-flex justify-content-center mt-5">
-    <div class="w-100" style="max-width: 500px;">
+<div class="app-shell">
+    <main class="app-main">
         @Body
-    </div>
+    </main>
+
+    <footer class="tabbar">
+        <div class="app-info">
+            <a href="https://www.nyqvist.net" target="_blank" rel="noopener">www.nyqvist.net</a>
+            <span>Version @BuildInfo.Version · Build @BuildInfo.Build</span>
+        </div>
+        <nav>
+            <NavLink href="" Match="NavLinkMatch.All">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                Beräkna
+            </NavLink>
+            <NavLink href="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+                Inställningar
+            </NavLink>
+        </nav>
+    </footer>
 </div>
