@@ -22,9 +22,9 @@
             <div class="ctl time-left">
                 <div class="segmented vertical" role="radiogroup" aria-label="Beräkningsläge">
                     <input type="radio" id="mode-start" name="mode" checked="@(!slutLage)" @onchange="() => ByLage(false)" />
-                    <label for="mode-start">Jag börjar kl</label>
+                    <label for="mode-start">Börja kl</label>
                     <input type="radio" id="mode-end" name="mode" checked="@slutLage" @onchange="() => ByLage(true)" />
-                    <label for="mode-end">Jag vill sluta kl</label>
+                    <label for="mode-end">Sluta kl</label>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
 
     <div class="two-col">
         <div class="col-left">
-            <label class="label" for="arbetstid">Arbetstid (h)</label>
+            <label class="label" for="arbetstid">Arbetstid (@TidssystemEtikett)</label>
             <div class="ctl work-left">
                 <input id="arbetstid" type="text" inputmode="decimal" class="input-x @(resultat is null ? "invalid" : "")"
                        @bind="arbetstid" @bind:event="oninput" placeholder="@Placeholder" />
@@ -83,7 +83,7 @@ else
 
 @code {
     // ---- Tillstånd (det användaren har valt) ----
-    private bool slutLage;                        // false = "Jag börjar kl", true = "Jag vill sluta kl"
+    private bool slutLage;                        // false = "Börja kl", true = "Sluta kl"
     private TimeOnly starttid = new(7, 30);
     private TimeOnly sluttid = new(16, 0);
     private string arbetstid = "";                // Texten i arbetstidsfältet (tolkas av TimeFormat)
@@ -101,6 +101,9 @@ else
     private TimeOnly ValdTid => slutLage ? sluttid : starttid;
 
     private string NuText => DateTime.Now.ToString("HH:mm");
+
+    /// <summary>Visas i fältets rubrik så att det är tydligt hur arbetstiden ska skrivas.</summary>
+    private string TidssystemEtikett => Config.TimeSystem == TimeSystem.Decimal ? "Dec." : "Timme";
 
     private string Placeholder => TimeFormat.Example(Config.TimeSystem);
 

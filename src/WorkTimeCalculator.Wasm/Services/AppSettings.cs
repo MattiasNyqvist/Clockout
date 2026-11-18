@@ -6,7 +6,7 @@ public enum TimeSystem
 {
     /// <summary>Halv åtta = 7,5</summary>
     Decimal,
-    /// <summary>Halv åtta = 7,30</summary>
+    /// <summary>Halv åtta = 7:30</summary>
     Clock
 }
 

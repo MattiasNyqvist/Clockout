@@ -20,7 +20,7 @@
                    @onchange="() => SetSystem(TimeSystem.Clock)" />
             <label for="sys-clock">Klocka</label>
         </div>
-        <div class="hint">Halv åtta skrivs som @(Config.TimeSystem == TimeSystem.Decimal ? "7,5" : "7,30").</div>
+        <div class="hint">Halv åtta skrivs som @(Config.TimeSystem == TimeSystem.Decimal ? "7,5" : "7:30").</div>
     </div>
 
     <div class="setting-group">
@@ -37,14 +37,15 @@
 </section>
 
 <section class="card-x">
+    <span class="label">Normal</span>
     <div class="field-grid">
         <div>
-            <label class="label" for="work">Normal arbetstid (h)</label>
+            <label class="label" for="work">Arbetstid (@(Config.TimeSystem == TimeSystem.Decimal ? "Dec." : "Timme"))</label>
             <input id="work" type="text" inputmode="decimal" class="input-x @(workInvalid ? "invalid" : "")"
                    placeholder="@TimeFormat.Example(Config.TimeSystem)" value="@workText" @onchange="SetWork" />
         </div>
         <div>
-            <label class="label" for="lunch">Normal lunch (min)</label>
+            <label class="label" for="lunch">Lunch (min)</label>
             <input id="lunch" type="number" inputmode="numeric" min="0" class="input-x"
                    value="@Config.NormalLunchMinutes" @onchange="SetLunch" />
         </div>

@@ -7,10 +7,10 @@
   </defs>
   <!-- Urtavla med rakt avskuren öppning åt höger -->
   <path d="M50.38 47.43 A24 24 0 1 1 50.38 16.57" fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="butt"/>
-  <!-- Visare med trubbiga ändar och luft mot ringen: lång och smal = minut (nedre), kort och bred = tim (övre) -->
+  <!-- Visare med trubbiga ändar och luft mot ringen: lång och smal = minut (nedre), kort och bred med liten spets = tim (övre) -->
   <g fill="none" stroke="url(#g)" stroke-linecap="butt">
-    <path d="M32 32 L44.3 42.3" stroke-width="4.5"/>
-    <path d="M32 32 L40.4 24.9" stroke-width="7"/>
+    <path d="M32 32 L44.3 42.3" stroke-width="3.8"/>
   </g>
+  <polygon points="34.25,34.68 42.29,27.93 43.49,22.36 37.79,22.57 29.75,29.32" fill="url(#g)"/>
   <circle cx="32" cy="32" r="4.5" fill="url(#g)"/>
 </svg>

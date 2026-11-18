@@ -25,17 +25,20 @@
     --accent-soft: #eef0ff;
     --accent-text: #ffffff;
     --danger: #dc2626;
+    --result-time: #dbe6ff; /* klockslaget i resultatkortet: ljusblått mot lila bakgrund */
     --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .06);
     --radius: 16px;
     color-scheme: light;
 
     /* Mått för hjulen. Samma värden används i alla kort så att allt linjerar. */
     --wheel-h: 6.8rem;
-    --wheel-w: 3rem;
-    --btn: 2.1rem;
+    /* Hjulen växer med skärmbredden: 2.7rem vid 375px, 3.8rem vid 450px och uppåt */
+    --wheel-w: clamp(2.7rem, 23.5vw - 2.8rem, 3.8rem);
+    --btn: 2.3rem;
     --now-h: 2.6rem;
+    --wheel-gap: 1.1rem; /* luft mellan tim- och minuthjulet */
     /* Bredden på två hjul: 2 × (hjul + mellanrum + knapp) + mellanrum mellan hjulen */
-    --right-w: calc(2 * (var(--wheel-w) + .4rem + var(--btn)) + .6rem);
+    --right-w: calc(2 * (var(--wheel-w) + .5rem + var(--btn)) + var(--wheel-gap));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -49,6 +52,7 @@
         --accent-soft: #232a52;
         --accent-text: #0b1020;
         --danger: #f87171;
+        --result-time: #16296b; /* mörkblått mot ljus bakgrund */
         --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
         color-scheme: dark;
     }
@@ -87,12 +91,12 @@ h1:focus { outline: none; }
     padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Diskret men läsbar rad, centrerad under flikarna */
 .app-info {
-    display: flex; justify-content: space-between; align-items: center; gap: .75rem;
-    max-width: 520px; margin: 0 auto; padding: 0 1rem .35rem;
-    font-size: .68rem; color: var(--muted);
+    text-align: center; padding: 0 1rem .4rem;
+    font-size: .68rem; color: var(--muted); opacity: .75;
 }
-.app-info a { color: var(--muted); text-decoration: none; }
+.app-info a { color: inherit; text-decoration: none; }
 .app-info a:hover { color: var(--accent); text-decoration: underline; }
 
 .tabbar nav { display: flex; max-width: 520px; margin: 0 auto; }
@@ -113,7 +117,7 @@ h1:focus { outline: none; }
 .head-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 .app-logo { width: 2.5rem; height: 2.5rem; flex: none; }
 
-.badge-week { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: .1rem .6rem; font-weight: 600; font-size: .78rem; }
+.badge-week { color: var(--accent); font-weight: 700; font-size: .9rem; }
 
 
 /* ===== 5. Kort och formulär ===== */
@@ -130,10 +134,10 @@ h1:focus { outline: none; }
 .card-divider { border: 0; border-top: 1px solid var(--line); opacity: 1; margin: .85rem 0; }
 
 /* Två kolumner: kontroller till vänster, hjul till höger.
-   Vänsterkolumnen är högst 10.5rem; resten av ytan blir luft mellan kolumnerna. */
+   Vänsterkolumnen är högst 8.5rem; resten av ytan blir luft mellan kolumnerna. */
 .two-col {
-    display: grid; grid-template-columns: minmax(0, 10.5rem) var(--right-w);
-    column-gap: .75rem; justify-content: space-between; align-items: start;
+    display: grid; grid-template-columns: minmax(0, 8.5rem) var(--right-w);
+    column-gap: 2.25rem; justify-content: space-between; align-items: start;
 }
 .col-left, .col-right { min-width: 0; }
 .ctl { height: var(--wheel-h); } /* Alla kontroller i en rad är lika höga som ett hjul */
@@ -142,6 +146,7 @@ h1:focus { outline: none; }
 .setting-group { margin-bottom: 1.1rem; }
 .setting-group:last-child { margin-bottom: 0; }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-grid > div { min-width: 0; } /* fälten får inte rinna över kortets kant */
 
 .input-x {
     width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--text);
@@ -167,15 +172,15 @@ h1:focus { outline: none; }
 .segmented.vertical { flex: 1; flex-direction: column; align-items: stretch; margin: 0; padding: 5px; gap: 5px; box-sizing: border-box; position: relative; }
 .segmented.vertical label {
     flex: 1; width: 100%; box-sizing: border-box; display: grid; place-items: center;
-    padding: 0 .3rem; font-size: .88rem; line-height: 1.15;
+    padding: 0 .2rem; font-size: .85rem; line-height: 1.15; white-space: nowrap;
 }
 
 
 /* ===== 6. Hjul och "Sätt till nu" ===== */
 .time-left { display: flex; flex-direction: column; gap: .85rem; }
 
-.wheels { display: flex; gap: .6rem; justify-content: flex-start; }
-.wheel { display: flex; align-items: stretch; gap: .4rem; height: var(--wheel-h); }
+.wheels { display: flex; gap: var(--wheel-gap); justify-content: flex-start; }
+.wheel { display: flex; align-items: stretch; gap: .5rem; height: var(--wheel-h); }
 .wheel-box {
     width: var(--wheel-w); border: 1.5px solid var(--accent); border-radius: 14px; background: var(--bg);
     display: flex; flex-direction: column; align-items: center; justify-content: space-between; overflow: hidden; padding: .1rem 0;
@@ -196,8 +201,9 @@ h1:focus { outline: none; }
 
 /* Arbetstidsfält överst, hjälptext längst ner – underkanten linjerar med hjulet */
 .work-left { display: flex; flex-direction: column; justify-content: space-between; }
-.work-left .input-x { margin: 0; }
-.work-left .hint { margin: 0; font-size: .74rem; line-height: 1.25; }
+.work-left .input-x { margin: 0; text-align: center; }
+/* En rad: texten får löpa in under luften bredvid, där det inte finns något annat */
+.work-left .hint { margin: 0; font-size: .74rem; line-height: 1.25; white-space: nowrap; }
 
 /* "Sätt till nu": lika bred som hjulen och högerställd under dem */
 .now-btn {
@@ -226,7 +232,7 @@ h1:focus { outline: none; }
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .result .small-label { opacity: .85; font-size: .85rem; font-weight: 500; line-height: 1.2; }
-.result .time { font-size: 3.2rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.result .time { font-size: 3.2rem; font-weight: 500; color: var(--result-time); letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .result .meta { opacity: .85; font-size: .85rem; line-height: 1.2; margin-top: .15rem; }
 .result.error { background: var(--surface); color: var(--danger); border: 1px solid var(--danger); box-shadow: none; }
 

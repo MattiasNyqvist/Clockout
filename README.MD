@@ -4,7 +4,7 @@ En webbapp byggd med Blazor WebAssembly (.NET 10) som räknar ut när du kan gå
 
 ## Funktioner
 
-- Två lägen: **Jag börjar kl** (räknar fram sluttid) och **Jag vill sluta kl** (räknar fram starttid)
+- Två lägen: **Börja kl** (räknar fram sluttid) och **Sluta kl** (räknar fram starttid)
 - Val av tid med hjul för timme, minut och lunch, plus "Sätt till nu"
 - Arbetstid som decimaltal (7,7) eller klockformat (7.42), valbart i inställningarna
 - Normal arbetstid, lunch, tidssystem och veckostart sparas i webbläsaren (localStorage)

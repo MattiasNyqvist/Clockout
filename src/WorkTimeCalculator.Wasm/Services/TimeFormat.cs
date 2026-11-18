@@ -31,12 +31,12 @@ public static class TimeFormat
         return true;
     }
 
-    /// <summary>Formaterar minuter enligt valt system, t.ex. 462 -> "7,7" eller "7,42".</summary>
+    /// <summary>Formaterar minuter enligt valt system, t.ex. 462 -> "7,7" (decimal) eller "7:42" (klocka).</summary>
     public static string Format(int minutes, TimeSystem system)
     {
         if (system == TimeSystem.Decimal)
             return Math.Round(minutes / 60.0, 2).ToString("0.##", CultureInfo.GetCultureInfo("sv-SE"));
-        return $"{minutes / 60},{minutes % 60:00}";
+        return $"{minutes / 60}:{minutes % 60:00}";
     }
 
     /// <summary>Veckonummer: ISO-8601 för måndag som veckostart, annars söndag (USA-stil).</summary>
